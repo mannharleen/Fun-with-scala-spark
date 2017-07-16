@@ -13,7 +13,7 @@ object mysql_try {
   def main(args: Array[String]): Unit = {
     var conn: Connection = null
     conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/test_db","root","password")
-      // "user=root&password=Aynrand01")
+      
     val stmt = conn.createStatement()
     val rs = stmt.executeQuery("SELECT * FROM table1")
 

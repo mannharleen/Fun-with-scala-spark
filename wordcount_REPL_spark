@@ -1,1 +1,7 @@
+import 
+import 
+
+val conf = new SparkConf().setAppName("GKL").setMaster("local[2]")
+val sc = new SparkContext(conf)
+
 sc.textFile("C:\\Users\\XX\\data\\read_data.txt").flatMap(x=>x.split(" ")).map(x=> (x,1)).reduceByKey((x,y)=> x+y).collect().foreach(println)

@@ -7,7 +7,8 @@
 */
 
 import org.apache.hadoop.io._
-import org.apache.lib.mapred._
+import org.apache.mapreduce.lib.output._
+import org.apache.mapreduce.lib.input._
 
 val l = List((1,"a"),(2,"b"),(3,"c"),(4,"d"))
 val rdd = sc.parallelize(l)

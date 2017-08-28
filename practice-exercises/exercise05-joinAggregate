@@ -1,0 +1,51 @@
+package com.exercise05
+
+/*
+Problem Statement:
+Get all the completed or closed orders and then compute total revenue for each day for each department
+Print order_date, department_name and order_revenue
+Submit the spark job
+Determine number of executors used to run
+Determine number of executor tasks used to run
+Understand DAG for each stage
+ */
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+object joinAggregate {
+
+  def main(args: Array[String]): Unit = {
+    val sc = new SparkContext(new SparkConf().setAppName("joinAggregate").setMaster("local[*]"))
+    sc.setLogLevel("ERROR")
+    val ip_orders = sc.textFile("s3n://XXX:YYY@modharleen/bigdata/data/retail_db/orders/")
+    val ip_order_items = sc.textFile("s3n://XXX:YYY@modharleen/bigdata/data/retail_db/order_items/")
+    val ip_products = sc.textFile("s3n://XXX:YYY@modharleen/bigdata/data/retail_db/products/")
+    val ip_categories = sc.textFile("s3n://XXX:YYY@modharleen/bigdata/data/retail_db/categories/")
+    val ip_departments = sc.textFile("s3n://XXX:YYY@modharleen/bigdata/data/retail_db/departments/")
+    
+    //filter to get closed and completed
+    val ip_orders_map_filter = ip_orders.map(x=> (x.split(",")(3),(x.split(",")(0),x.split(",")(1)))). //order_status, (order_id, order_date)
+      filter(y => {(y._1 == "COMPLETED") || (y._1 == "CLOSED")})
+    
+    //join oi and o
+    val orders_right = ip_orders_map_filter.map(x=> (x._2._1,x._2._2)) //order_id and date
+    val order_items_left = ip_order_items.map(x=> (x.split(",")(1),x)) //order_id, <all>
+    val join_oi_o = order_items_left.join(orders_right).map(y=> (y._2._1.split(",")(0), (y._2._2,y._2._1.split(",")(4).toDouble) )) // order_item_id, (date, revenue)
+
+    val ip_order_items_split = ip_order_items.map(x=> x.split(","))
+    val ip_products_split = ip_products.map(x=> x.split(","))
+    val ip_categories_split = ip_categories.map(x=> x.split(","))
+    val ip_departments_split = ip_departments.map(x=> x.split(","))
+
+    //Join order_items with department
+    val join_oi_d = ip_order_items_split.map(x=>(x(2),x(0))).
+      join(ip_products_split.map(z=> ( z(0),z(1) ) )).map(y=> (y._2._2,y._2._1)).  //category_id,order_item_id
+      join(ip_categories_split.map(t=> (t(0),t(1)) )).map(y=> (y._2._2,y._2._1)).  //dept_id,order_item_id
+      join(ip_departments_split.map(q=>(q(0),q(1)) )).map(y=> (y._2._1,y._2._2) ) //order_item_id, dept_name
+
+    val joined = join_oi_o.join(join_oi_d).map(y=> ((y._2._1._1,y._2._2), y._2._1._2)) // (date,dept), revenue
+    val outrdd = joined.reduceByKey((q,w)=> q+w).sortByKey()
+    outrdd.saveAsTextFile("s3n://XXX:YYY@modharleen/bigdata/data/output_ex05")
+
+  }
+
+}

@@ -1,9 +1,11 @@
 package com.exercise05
 
 /*
-Problem Statement:
+Problem Statement: (wrt retail_db)
 Get all the completed or closed orders and then compute total revenue for each day for each department
 Print order_date, department_name and order_revenue
+Use RDD API
+
 Submit the spark job
 Determine number of executors used to run
 Determine number of executor tasks used to run

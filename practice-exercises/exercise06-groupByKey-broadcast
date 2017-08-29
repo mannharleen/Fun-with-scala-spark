@@ -1,0 +1,59 @@
+/*
+Problem Statement:
+Get top N stocks by volume for each day
+
+  Develop topNStocks function - function should takes 1 parameter
+  First Parameter - Date
+  Function should sort data in descending order and return top 10 stocks
+  If there are more than N stocks in topN print all stocks (dense rank)
+*/
+
+package com.exercise06
+
+import org.apache.spark.{SparkContext,SparkConf}
+
+object groupByKey {
+  def main(args: Array[String]): Unit = {
+    //first param
+    val param1 = "26-Nov-2010"
+
+    val sc = new SparkContext(new SparkConf().setAppName("groupByKey").setMaster("local[1]"))
+    sc.setLogLevel("ERROR")
+
+    val ip_rdd = sc.textFile("s3n://AKIAJHPZOGQPYAZG4VEA:vXnefwkNMH81YJH9uiw08ZT7v3KEDRhNaLQhIHHF@modharleen/bigdata/data/nyse_data/").
+    filter(x=> x.contains(param1))
+    val ip_rdd_split = ip_rdd.map(x=> x.split(",")) //RDD[Array[String]]
+
+
+    //
+    val ip_bydate  = ip_rdd_split.map(x=> (x(1),(x(6).toDouble,x(0))) ) //(date, (volume, name))
+    //groupby date
+    val ip_groupby = ip_bydate.groupByKey(1) //RDD[(String, Iterable[(Double, String)])]
+                                            // I know that same date is present in only 1 partition, hence mentioning stage2 to have 1 task only
+    //within each group sort by volume desc
+    val ip_group_sort = ip_groupby.map(x=> (x._1,x._2.toList.sortBy(s=> -s._1))) //RDD[(String, List[(Double, String)])]
+
+    // top 10 - not dense (sparse) rank
+    println("Sparse rank (top 10)")
+    val out_sort = ip_group_sort.map(x=> (x._1,x._2.take(10))) //NOTE: take is scala API and
+                                                              // will work in our case since one dates is present in 1 partition only
+                                                              // this is because of using groupByKey
+    //val out_sort = ip_group_sort.collect.map(x=> (x._1,x._2.take(10))) // we could use collect like here to be safe, but is not efficient
+    out_sort.foreach(println)
+
+    // top 10 - dense
+    //get 10th volume by rank descending (using distinct)
+    val ip_group_sort_uniq_tenth = ip_group_sort.map(x=> (x._1, {val t = x._2.distinct.sortBy(r=> -r._1)
+                                                t(9)} ) ).collect()
+
+    val broadcast = sc.broadcast(ip_group_sort_uniq_tenth.toMap)
+
+    //filter the sorted data to show where value >= value in broadcast
+    println("Dense rank (top 10)")
+    val out_denseSort =
+      ip_group_sort.map(x=> (x._1, x._2.filter(y=> y._1 >= { val q = broadcast.value.get(x._1).toList; q(0)._1;} ))).
+        collect.foreach(println)
+
+  }
+
+}

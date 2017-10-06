@@ -15,6 +15,7 @@ assemblyMergeStrategy in assembly := {
 libraryDependencies ++= Seq(
 	"org.apache.spark" % "spark-core_2.10" % "1.6.2",// % "provided",
 	"org.apache.spark" % "spark-sql_2.10" % "1.6.2",//  % "provided",
-	"org.apache.spark" % "spark-hive_2.10" % "1.6.2"// % "provided"
+	"org.apache.spark" % "spark-hive_2.10" % "1.6.2",// % "provided"
+	"com.typesafe" % "config" % "1.3.1"
 
 	)

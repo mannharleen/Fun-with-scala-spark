@@ -3,11 +3,11 @@ import org.apache.spark.{SparkConf,SparkContext}
 import org.apache.spark.sql.hive.HiveContext
 
 object spark_init{
-  def init(): Unit = {
-    val conf = new SparkConf().setAppName("app").setMaster("local")
+  def init() = {
+    val conf = new SparkConf().setAppName("app").setMaster("local[5]")
     val sc = new SparkContext(conf)
     sc.setLogLevel("ERROR")
     val sqlContext = new HiveContext(sc)
-    import sqlContext.implicits._
+    (sc,sqlContext)
   }
 }

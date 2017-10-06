@@ -1,6 +1,5 @@
 *.conf
-target
-metastore_db/
+IdeaProjects/target
+IdeaProjects/metastore_db/
 IdeaProjects/.idea/
-IdeaProjects/.idea/workspace.xml
 IdeaProjects/.idea/workspace.xml

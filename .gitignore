@@ -1,1 +1,3 @@
 *.conf
+target
+metastore_db/

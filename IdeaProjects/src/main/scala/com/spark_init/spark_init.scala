@@ -4,7 +4,7 @@ import org.apache.spark.sql.hive.HiveContext
 
 object spark_init{
   def init() = {
-    val conf = new SparkConf().setAppName("app").setMaster("local[5]")
+    val conf = new SparkConf().setAppName("app").setMaster("local[4]")
     val sc = new SparkContext(conf)
     sc.setLogLevel("ERROR")
     val sqlContext = new HiveContext(sc)

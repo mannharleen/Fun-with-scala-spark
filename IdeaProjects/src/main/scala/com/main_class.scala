@@ -27,7 +27,7 @@ object main_class {
       //manually partitioning right now
     val table_beat = "fscphkl.boepisodeaccounttxn"
     val df_beat = sqlContext.read.jdbc("jdbc:oracle:thin:@//172.18.20.70:1521/FSCLIVE",table_beat,
-      "boepisodeaccounttxn_id",1,100000000,10, prop)
+      "boepisodeaccounttxn_id",1,100000000,4, prop)
 
     //put to destination
     df_beat.write.parquet(s"s3n://$s3aKey:$s3sKey@modharleen/fisicien_uat/"+table_beat)

@@ -1,3 +1,6 @@
 *.conf
 target
 metastore_db/
+IdeaProjects/.idea/
+IdeaProjects/.idea/workspace.xml
+IdeaProjects/.idea/workspace.xml
